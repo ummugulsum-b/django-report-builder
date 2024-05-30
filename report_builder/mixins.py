@@ -11,7 +11,6 @@ except ImportError:
     )
 from django.db.models import Avg, Count, Sum, Max, Min
 from openpyxl.workbook import Workbook
-from openpyxl.writer.excel import save_virtual_workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font
 import csv
@@ -20,6 +19,7 @@ from collections import namedtuple
 from decimal import Decimal
 from numbers import Number
 from functools import reduce
+from tempfile import NamedTemporaryFile
 import datetime
 
 from .utils import (
@@ -85,13 +85,16 @@ class DataExportMixin(object):
     def build_xlsx_response(self, wb, title="report"):
         """ Take a workbook and return a xlsx file response """
         title = generate_filename(title, '.xlsx')
-        myfile = BytesIO()
-        myfile.write(save_virtual_workbook(wb))
+        with NamedTemporaryFile() as tmp:
+            wb.save(tmp.name)
+            tmp.seek(0)
+            stream = tmp.read()
+            stream_size = tmp.tell()
         response = HttpResponse(
-            myfile.getvalue(),
+            stream,
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename=%s' % title
-        response['Content-Length'] = myfile.tell()
+        response['Content-Length'] = stream_size
         return response
 
     def build_csv_response(self, wb, title="report"):
@@ -137,8 +140,12 @@ class DataExportMixin(object):
         wb = self.list_to_workbook(data, title, header, widths)
         if not title.endswith('.xlsx'):
             title += '.xlsx'
+        with NamedTemporaryFile() as tmp:
+            wb.save(tmp.name)
+            tmp.seek(0)
+            stream = tmp.read()
         myfile = BytesIO()
-        myfile.write(save_virtual_workbook(wb))
+        myfile.write(stream)
         return myfile
 
     def list_to_csv_file(self, data, title='report', header=None, widths=None):
