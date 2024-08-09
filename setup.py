@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="django-report-builder",
-    version="6.5.3",
+    version="6.5.4",
     author="David Burke",
     author_email="david@burkesoftware.com",
     maintainer="Mustafa Ülker",
