@@ -1,4 +1,4 @@
-from six import BytesIO, StringIO, text_type, string_types
+from io import BytesIO, StringIO
 
 from django.http import HttpResponse
 from django.contrib.contenttypes.models import ContentType
@@ -67,14 +67,14 @@ class DataExportMixin(object):
                 if isinstance(item, str):
                     # Change it to a unicode string
                     try:
-                        row[i] = text_type(item)
+                        row[i] = str(item)
                     except UnicodeDecodeError:
-                        row[i] = text_type(item.decode('utf-8', 'ignore'))
+                        row[i] = str(item.decode('utf-8', 'ignore'))
                 elif type(item) is dict:
-                    row[i] = text_type(item)
+                    row[i] = str(item)
                 # convert non native types to string
                 elif type(item) not in {int, float, bool}:
-                    row[i] = text_type(item)
+                    row[i] = str(item)
             try:
                 ws.append(row)
             except ValueError as e:
@@ -411,7 +411,7 @@ class DataExportMixin(object):
 
         if hasattr(display_fields, 'filter'):
             defaults = {
-                None: text_type,
+                None: str,
                 datetime.date: lambda: datetime.date(datetime.MINYEAR, 1, 1),
                 datetime.datetime: lambda: datetime.datetime(datetime.MINYEAR, 1, 1),
             }
@@ -477,9 +477,9 @@ class DataExportMixin(object):
 
             for position, choice_list in choice_lists.items():
                 try:
-                    row[position] = text_type(choice_list[row[position]])
+                    row[position] = str(choice_list[row[position]])
                 except Exception:
-                    row[position] = text_type(row[position])
+                    row[position] = str(row[position])
 
             for pos, style in display_formats.items():
                 row[pos] = formatter(row[pos], style)
@@ -514,7 +514,7 @@ class DataExportMixin(object):
     def sort_helper(self, value, default):
         if value is None:
             value = default
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             value = value.lower()
         return value
 
