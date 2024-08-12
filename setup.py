@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="django-report-builder",
-    version="6.5.4",
+    version="6.5.5",
     author="David Burke",
     author_email="david@burkesoftware.com",
     maintainer="Mustafa Ülker",
@@ -22,11 +22,10 @@ setup(
         'Intended Audience :: System Administrators',
         "License :: OSI Approved :: BSD License",
     ],
-    python_requires='>=3.3',
+    python_requires='>=3.4',
     install_requires=[
-        'openpyxl <= 3.0.10',
+        'openpyxl',
         'python-dateutil',
         'djangorestframework>=3.8.0',
-        "six"
     ]
 )
