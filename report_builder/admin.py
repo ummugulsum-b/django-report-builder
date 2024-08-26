@@ -77,9 +77,9 @@ class ReportAdmin(admin.ModelAdmin):
     def ajax_starred(self, obj):
         if obj.starred.filter(id=self.user.id):
 
-            img = static('report_builder/img/star.png'),
+            img = static('report_builder/img/star.png')
         else:
-            img = static('report_builder/img/unstar.png'),
+            img = static('report_builder/img/unstar.png')
         return mark_safe(
             '<a href="javascript:void(0)" onclick="ajax_add_star(this, \'{0}\')"><img style="width: 26px; margin: -6px;" src="{1}"/></a>'.format(
                 reverse('ajax_add_star', args=[obj.id]), img)
