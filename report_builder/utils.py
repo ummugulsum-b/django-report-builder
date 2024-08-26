@@ -46,7 +46,7 @@ NUMBER = 2
 
 
 def sort_helper(x, sort_key, sort_type):
-    """ Sadly python 3 makes it very hard to sort mixed types
+    """ Sadly, python 3 makes it very hard to sort mixed types
         We can work around this by forcing the types
     """
     result = x[sort_key]

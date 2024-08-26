@@ -1,29 +1,37 @@
+import csv
+import json
+import time
+import unittest
+from datetime import date, datetime, timedelta, time as dtime
+from io import StringIO
+
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.query import QuerySet
 from django.test import TestCase
 from django.test.utils import override_settings
-from ..models import (
-    Report, DisplayField, FilterField, Format, get_allowed_models,
-    get_limit_choices_to_callable)
-from report_builder_demo.demo_models.models import (
-    Bar, Place, Restaurant, Waiter, Person, Child)
-from report_builder.api.serializers import ReportNestedSerializer
-from django.conf import settings
-from rest_framework.test import APIClient
-import time
-import csv
-import unittest
-import json
-from io import StringIO
+from django.urls import reverse
 from freezegun import freeze_time
-from datetime import date, datetime, timedelta, time as dtime
+from rest_framework.test import APIClient
 
-from django.contrib.auth import get_user_model
-
-try:
-    from django.core.urlresolvers import reverse
-except ImportError:
-    from django.urls import reverse
+from report_builder.api.serializers import ReportNestedSerializer
+from report_builder_demo.demo_models.models import (
+    Bar,
+    Place,
+    Restaurant,
+    Waiter,
+    Person,
+    Child
+)
+from ..models import (
+    Report,
+    DisplayField,
+    FilterField,
+    Format,
+    get_allowed_models,
+    get_limit_choices_to_callable
+)
 
 User = get_user_model()
 
@@ -84,7 +92,7 @@ class ReportBuilderTests(TestCase):
 
         self.assertTrue(callable(get_limit_choices_to_callable))
         self.assertTrue(isinstance(lookup_dict['pk__in'], QuerySet))
-        self.assertQuerysetEqual(lookup_dict['pk__in'], map(repr, models), ordered=False)
+        self.assertQuerySetEqual(lookup_dict['pk__in'], map(repr, models), ordered=False)
 
     def test_report_builder_reports(self):
         url = '/report_builder/api/reports/'

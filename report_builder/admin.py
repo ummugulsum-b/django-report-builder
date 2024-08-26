@@ -1,16 +1,12 @@
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.safestring import mark_safe
+
 from report_builder.models import Report, Format
-from django.conf import settings
-
-try:
-    from django.core.urlresolvers import reverse
-except ImportError:
-    from django.urls import reverse
-
 
 static_url = getattr(settings, 'STATIC_URL', '/static/')
 
@@ -29,6 +25,7 @@ class StarredFilter(SimpleListFilter):
             return queryset.filter(starred=request.user)
 
 
+@admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
     list_display = ('ajax_starred', 'edit', 'name', 'description', 'root_model', 'created', 'modified', 'user_created', 'download_xlsx', 'copy_report',)
     readonly_fields = ['slug', ]
@@ -63,6 +60,9 @@ class ReportAdmin(admin.ModelAdmin):
         self.user = request.user
         return super(ReportAdmin, self).changelist_view(request, extra_context=extra_context)
 
+    @admin.display(
+        description="Starred"
+    )
     def ajax_starred(self, obj):
         if obj.starred.filter(id=self.user.id):
             img = static_url + 'report_builder/img/star.png'
@@ -71,8 +71,6 @@ class ReportAdmin(admin.ModelAdmin):
         return mark_safe('<a href="javascript:void(0)" onclick="ajax_add_star(this, \'{0}\')"><img style="width: 26px; margin: -6px;" src="{1}"/></a>'.format(
             reverse('ajax_add_star', args=[obj.id]),
             img))
-    ajax_starred.allow_tags = True
-    ajax_starred.short_description = "Starred"
 
     def save_model(self, request, obj, form, change):
         star_user = False
@@ -89,7 +87,6 @@ class ReportAdmin(admin.ModelAdmin):
 
 
 
-admin.site.register(Report, ReportAdmin)
 admin.site.register(Format)
 
 

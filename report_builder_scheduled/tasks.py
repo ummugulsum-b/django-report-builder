@@ -1,4 +1,5 @@
 from celery import shared_task
+
 import report_builder_scheduled.models
 
 

@@ -1,17 +1,15 @@
+from unittest import skipIf
+
 import django
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core import mail
 from django.test import TestCase
-from .models import ScheduledReport
-from report_builder.models import Report
-from .tasks import report_builder_run_scheduled_report
-from unittest import skipIf
+from django.urls import reverse
 
-try:
-    from django.core.urlresolvers import reverse
-except ImportError:
-    from django.urls import reverse
+from report_builder.models import Report
+from .models import ScheduledReport
+from .tasks import report_builder_run_scheduled_report
 
 User = get_user_model()
 

@@ -1,26 +1,20 @@
-from io import BytesIO, StringIO
-
-from django.http import HttpResponse
-from django.contrib.contenttypes.models import ContentType
-try:
-    from django.db.models.fields.related_descriptors import ManyToManyDescriptor
-except ImportError:
-    # Django 1.8 compat hack.
-    from django.db.models.fields.related import (
-        ReverseManyRelatedObjectsDescriptor as ManyToManyDescriptor
-    )
-from django.db.models import Avg, Count, Sum, Max, Min
-from openpyxl.workbook import Workbook
-from openpyxl.utils import get_column_letter
-from openpyxl.styles import Font
 import csv
+import datetime
 import re
 from collections import namedtuple
 from decimal import Decimal
-from numbers import Number
 from functools import reduce
+from io import BytesIO, StringIO
+from numbers import Number
 from tempfile import NamedTemporaryFile
-import datetime
+
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Avg, Count, Sum, Max, Min
+from django.db.models.fields.related_descriptors import ManyToManyDescriptor
+from django.http import HttpResponse
+from openpyxl.styles import Font
+from openpyxl.utils import get_column_letter
+from openpyxl.workbook import Workbook
 
 from .utils import (
     get_relation_fields_from_model,
@@ -29,7 +23,6 @@ from .utils import (
     get_model_from_path_string,
     get_custom_fields_from_model,
 )
-
 
 DisplayField = namedtuple(
     "DisplayField",
@@ -63,9 +56,9 @@ class DataExportMixin(object):
         for row in data:
             for i in range(len(row)):
                 item = row[i]
-                # If item is a regular string
+                # If the item is a regular string
                 if isinstance(item, str):
-                    # Change it to a unicode string
+                    # Change it to an unicode string
                     try:
                         row[i] = str(item)
                     except UnicodeDecodeError:
@@ -83,7 +76,7 @@ class DataExportMixin(object):
                 ws.append(['Unknown Error'])
 
     def build_xlsx_response(self, wb, title="report"):
-        """ Take a workbook and return a xlsx file response """
+        """ Take a workbook and return an xlsx file response """
         title = generate_filename(title, '.xlsx')
         with NamedTemporaryFile() as tmp:
             wb.save(tmp.name)

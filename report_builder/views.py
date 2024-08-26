@@ -1,17 +1,19 @@
 import copy
 import json
+
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.contenttypes.models import ContentType
+from django.http import HttpResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, View
 from six import string_types
-from .utils import duplicate
-from .models import Report
+
 from .mixins import DataExportMixin
+from .models import Report
+from .utils import duplicate
 
 User = get_user_model()
 
@@ -124,9 +126,9 @@ def create_copy(request, pk):
 
 class ExportToReport(DownloadFileView, TemplateView):
     """ Export objects (by ID and content type) to an existing or new report
-    In effect this runs the report with it's display fields. It ignores
-    filters and filters instead the provided ID's. It can be select
-    as a global admin action.
+    In effect, this runs the report with its display fields.
+    It ignores filters and filters instead of the provided ID's.
+    It can be selected as a global admin action.
     """
     template_name = "report_builder/export_to_report.html"
 
@@ -161,7 +163,7 @@ class ExportToReport(DownloadFileView, TemplateView):
 
 @staff_member_required
 def check_status(request, pk, task_id):
-    """ Check if the asyncronous report is ready to download """
+    """ Check if the asynchronous report is ready to download """
     from celery.result import AsyncResult
     res = AsyncResult(task_id)
     link = ''
