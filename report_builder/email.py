@@ -1,6 +1,6 @@
 from django.conf import settings
-from django.template.loader import get_template
 from django.core.mail import send_mail, EmailMultiAlternatives
+from django.template.loader import get_template
 
 
 def email_report(report_url, user=None, email=None):

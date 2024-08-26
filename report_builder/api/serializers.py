@@ -1,9 +1,11 @@
-from django.db import transaction
+import datetime
+
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from report_builder.models import Report, DisplayField, FilterField, Format
+from django.db import transaction
 from rest_framework import serializers
-import datetime
+
+from report_builder.models import Report, DisplayField, FilterField, Format
 
 User = get_user_model()
 
@@ -30,7 +32,7 @@ class DisplayFieldSerializer(serializers.ModelSerializer):
 
 
 class NonStrictCharField(serializers.CharField):
-    """ Allow booleans to be turned into strings instead of erroring """
+    """ Allow booleans to be turned into strings instead of error """
     def to_internal_value(self, value):
         if value is True:
             return "True"

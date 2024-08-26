@@ -1,21 +1,21 @@
 import copy
-from django.contrib.contenttypes.models import ContentType
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from django.utils.functional import cached_property
+
 from django.conf import settings
-from django.core import serializers
-from rest_framework import viewsets, status
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from django.contrib.contenttypes.models import ContentType
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.utils.functional import cached_property
+from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
-from ..models import Report, Format, FilterField, get_allowed_models
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from .serializers import (
     ReportNestedSerializer, ReportSerializer, FormatSerializer,
     FilterFieldSerializer, ContentTypeSerializer)
 from ..mixins import GetFieldsMixin, DataExportMixin
+from ..models import Report, Format, FilterField, get_allowed_models
 from ..utils import duplicate
 
 

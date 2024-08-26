@@ -1,28 +1,31 @@
-from django import forms
-from django.contrib.contenttypes.models import ContentType
-from django.conf import settings
-from django.core.files.base import ContentFile
-from django.core.exceptions import ValidationError, ObjectDoesNotExist, FieldDoesNotExist
-from django.utils.safestring import mark_safe
-from django.utils.functional import cached_property
-from django.db import models
-from django.db.models import Avg, Min, Max, Count, Sum, F
-from report_builder.unique_slugify import unique_slugify
-from .utils import (
-    get_model_from_path_string, sort_data, increment_total, formatter)
-from .mixins import generate_filename, DataExportMixin
-from .email import email_report
-from dateutil import parser
-from decimal import Decimal
-from functools import reduce
-import time
 import datetime
 import re
+import time
+from decimal import Decimal
+from functools import reduce
 
-try:
-    from django.core.urlresolvers import reverse
-except ImportError:
-    from django.urls import reverse
+from dateutil import parser
+from django import forms
+from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError, ObjectDoesNotExist, FieldDoesNotExist
+from django.core.files.base import ContentFile
+from django.db import models
+from django.db.models import Avg, Min, Max, Count, Sum, F
+from django.urls import reverse
+from django.utils.functional import cached_property
+from django.utils.safestring import mark_safe
+
+from build.lib.report_builder.models import Format
+from report_builder.unique_slugify import unique_slugify
+from .email import email_report
+from .mixins import generate_filename, DataExportMixin
+from .utils import (
+    get_model_from_path_string,
+    sort_data,
+    increment_total,
+    formatter
+)
 
 AUTH_USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 
@@ -60,8 +63,9 @@ def get_limit_choices_to_callable():
 class Report(models.Model):
     """ A saved report with queryset and descriptive fields
     """
+
     def _get_model_manager(self):
-        """ Get  manager from settings else use objects
+        """ Get manager from settings else use objects
         """
         model_manager = 'objects'
         if getattr(settings, 'REPORT_BUILDER_MODEL_MANAGER', False):
@@ -123,13 +127,13 @@ class Report(models.Model):
 
     def get_field_type(self, field_name, path=""):
         """ Get field type for given field name.
-        field_name is the full path of the field
+        Field_name is the full path of the field
         path is optional
         """
         model = get_model_from_path_string(
             self.root_model_class, path + field_name)
 
-        # Is it a ORM field?
+        # Is it an ORM field?
         try:
             return model._meta.get_field(field_name).get_internal_type()
         except FieldDoesNotExist:
@@ -200,8 +204,8 @@ class Report(models.Model):
 
             # Build display format list
             if (
-                hasattr(display_field, 'display_format') and
-                display_field.display_format
+                    hasattr(display_field, 'display_format') and
+                    display_field.display_format
             ):
                 display_formats[display_field.position] = \
                     display_field.display_format
@@ -279,7 +283,7 @@ class Report(models.Model):
                         break
 
         for display_field in display_fields.filter(
-            sort__gt=0
+                sort__gt=0
         ).order_by('-sort'):
             data_list = sort_data(data_list, display_field)
 
@@ -297,8 +301,8 @@ class Report(models.Model):
                 display_totals_row[pos] = formatter(display_totals_row[pos], style)
 
             data_list += [
-                ['TOTALS'] + (len(display_fields) - 1) * ['']
-            ] + [display_totals_row]
+                             ['TOTALS'] + (len(display_fields) - 1) * ['']
+                         ] + [display_totals_row]
 
         return data_list
 
@@ -338,7 +342,7 @@ class Report(models.Model):
 
             # Check for special types such as isnull
             if (filter_field.filter_type == "isnull" and
-               filter_field.filter_value in ["0", "False"]):
+                    filter_field.filter_value in ["0", "False"]):
                 filter_ = {filter_string: False}
             elif filter_field.filter_type == "in":
                 filter_ = {filter_string: filter_field.filter_value.split(',')}
@@ -394,7 +398,7 @@ class Report(models.Model):
                 getattr(settings, 'STATIC_URL', '/static/')
             )
         )
-    edit.allow_tags = True
+
 
     def download_xlsx(self):
         if getattr(settings, 'REPORT_BUILDER_ASYNC_REPORT', False):
@@ -411,19 +415,20 @@ class Report(models.Model):
                     getattr(settings, 'STATIC_URL', '/static/'),
                 )
             )
+
     download_xlsx.short_description = "Download"
-    download_xlsx.allow_tags = True
 
     def copy_report(self):
-        return mark_safe('<a href="{0}"><img style="width: 26px; margin: -6px" src="{1}report_builder/img/copy.svg"/></a>'.format(
-            reverse('report_builder_create_copy', args=[self.id]),
-            getattr(settings, 'STATIC_URL', '/static/'),
-        ))
+        return mark_safe(
+            '<a href="{0}"><img style="width: 26px; margin: -6px" src="{1}report_builder/img/copy.svg"/></a>'.format(
+                reverse('report_builder_create_copy', args=[self.id]),
+                getattr(settings, 'STATIC_URL', '/static/'),
+            ))
+
     copy_report.short_description = "Copy"
-    copy_report.allow_tags = True
 
     def check_report_display_field_positions(self):
-        """ After report is saved, make sure positions are sane
+        """ After a report is saved, make sure positions are sane
         """
         for i, display_field in enumerate(self.displayfield_set.all()):
             if display_field.position != i + 1:
@@ -435,7 +440,7 @@ class Report(models.Model):
         return email_report(report_url, user=user, email=email)
 
     def async_report_save(self, objects_list,
-                          title, header, widths, user=None, file_type="xlsx", email_to:str = None):
+                          title, header, widths, user=None, file_type="xlsx", email_to: str = None):
         data_export = DataExportMixin()
         if file_type == 'csv':
             csv_file = data_export.list_to_csv_file(objects_list, title,
@@ -456,7 +461,8 @@ class Report(models.Model):
             if user.email:
                 self.email_report(user=user)
 
-    def run_report(self, file_type, user=None, queryset=None, asynchronous=False, scheduled=False, email_to:str = None):
+    def run_report(self, file_type, user=None, queryset=None, asynchronous=False, scheduled=False,
+                   email_to: str = None):
         """Generate this report file"""
         if not queryset:
             queryset = self.get_query()
@@ -550,7 +556,7 @@ class DisplayField(AbstractField):
     total = models.BooleanField(default=False)
     group = models.BooleanField(default=False)
     display_format = models.ForeignKey(Format, blank=True, null=True,
-        on_delete=models.SET_NULL)
+                                       on_delete=models.SET_NULL)
 
     def get_choices(self, model, field_name):
         try:

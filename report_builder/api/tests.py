@@ -1,10 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from model_bakery import baker
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import force_authenticate
-from model_bakery import baker
-from .views import ContentTypeViewSet
 
+from .views import ContentTypeViewSet
 
 User = get_user_model()
 
