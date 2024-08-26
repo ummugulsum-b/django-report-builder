@@ -3,12 +3,11 @@ from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from report_builder.models import Report, Format
-
-static_url = getattr(settings, 'STATIC_URL', '/static/')
 
 
 class StarredFilter(SimpleListFilter):
@@ -27,7 +26,18 @@ class StarredFilter(SimpleListFilter):
 
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ('ajax_starred', 'edit', 'name', 'description', 'root_model', 'created', 'modified', 'user_created', 'download_xlsx', 'copy_report',)
+    list_display = (
+        'ajax_starred',
+        'edit',
+        'name',
+        'description',
+        'root_model',
+        'created',
+        'modified',
+        'user_created',
+        'download_xlsx',
+        'copy_report',
+    )
     readonly_fields = ['slug', ]
     fields = ['name', 'description', 'root_model', 'slug']
     search_fields = ('name', 'description')
@@ -38,8 +48,9 @@ class ReportAdmin(admin.ModelAdmin):
     class Media:
         js = [
             'admin/js/jquery.init.js',
-            static_url + 'report_builder/js/report_list.js',
-            static_url + 'report_builder/js/report_form.js']
+            static('report_builder/js/report_list.js'),
+            static('report_builder/js/report_form.js'),
+        ]
 
     def response_add(self, request, obj, post_url_continue=None):
         if '_easy' in request.POST:
@@ -65,12 +76,14 @@ class ReportAdmin(admin.ModelAdmin):
     )
     def ajax_starred(self, obj):
         if obj.starred.filter(id=self.user.id):
-            img = static_url + 'report_builder/img/star.png'
+
+            img = static('report_builder/img/star.png'),
         else:
-            img = static_url + 'report_builder/img/unstar.png'
-        return mark_safe('<a href="javascript:void(0)" onclick="ajax_add_star(this, \'{0}\')"><img style="width: 26px; margin: -6px;" src="{1}"/></a>'.format(
-            reverse('ajax_add_star', args=[obj.id]),
-            img))
+            img = static('report_builder/img/unstar.png'),
+        return mark_safe(
+            '<a href="javascript:void(0)" onclick="ajax_add_star(this, \'{0}\')"><img style="width: 26px; margin: -6px;" src="{1}"/></a>'.format(
+                reverse('ajax_add_star', args=[obj.id]), img)
+        )
 
     def save_model(self, request, obj, form, change):
         star_user = False
@@ -85,9 +98,9 @@ class ReportAdmin(admin.ModelAdmin):
             obj.starred.add(request.user)
 
 
-
-
-admin.site.register(Format)
+@admin.register(Format)
+class FormatAdmin(admin.ModelAdmin):
+    pass
 
 
 def export_to_report(modeladmin, request, queryset):
@@ -97,7 +110,9 @@ def export_to_report(modeladmin, request, queryset):
     for s in selected_int:
         selected.append(str(s))
     ct = ContentType.objects.get_for_model(queryset.model)
-    return HttpResponseRedirect(reverse('export_to_report') + "?ct=%s&admin_url=%s&ids=%s" % (ct.pk, admin_url, ",".join(selected)))
+    return HttpResponseRedirect(
+        reverse('export_to_report') + "?ct=%s&admin_url=%s&ids=%s" % (ct.pk, admin_url, ",".join(selected))
+    )
 
 
 if getattr(settings, 'REPORT_BUILDER_GLOBAL_EXPORT', False):

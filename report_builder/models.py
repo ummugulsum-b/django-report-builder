@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist, FieldDoe
 from django.core.files.base import ContentFile
 from django.db import models
 from django.db.models import Avg, Min, Max, Count, Sum, F
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
@@ -393,26 +394,25 @@ class Report(models.Model):
 
     def edit(self):
         return mark_safe(
-            '<a href="{0}"><img style="width: 26px; margin: -6px" src="{1}report_builder/img/edit.svg"/></a>'.format(
+            '<a href="{0}"><img style="width: 26px; margin: -6px" src="{1}"/></a>'.format(
                 self.get_absolute_url(),
-                getattr(settings, 'STATIC_URL', '/static/')
+                static('report_builder/img/edit.svg')
             )
         )
-
 
     def download_xlsx(self):
         if getattr(settings, 'REPORT_BUILDER_ASYNC_REPORT', False):
             return mark_safe(
-                '<a href="javascript:void(0)" onclick="get_async_report({0})"><img style="width: 26px; margin: -6px" src="{1}report_builder/img/download.svg"/></a>'.format(
+                '<a href="javascript:void(0)" onclick="get_async_report({0})"><img style="width: 26px; margin: -6px" src="{1}"/></a>'.format(
                     self.id,
-                    getattr(settings, 'STATIC_URL', '/static/'),
+                    static('report_builder/img/download.svg')
                 )
             )
         else:
             return mark_safe(
-                '<a href="{0}"><img style="width: 26px; margin: -6px" src="{1}report_builder/img/download.svg"/></a>'.format(
+                '<a href="{0}"><img style="width: 26px; margin: -6px" src="{1}"/></a>'.format(
                     reverse('report_download_file', args=[self.id]),
-                    getattr(settings, 'STATIC_URL', '/static/'),
+                    static('report_builder/img/download.svg')
                 )
             )
 
@@ -420,10 +420,11 @@ class Report(models.Model):
 
     def copy_report(self):
         return mark_safe(
-            '<a href="{0}"><img style="width: 26px; margin: -6px" src="{1}report_builder/img/copy.svg"/></a>'.format(
+            '<a href="{0}"><img style="width: 26px; margin: -6px" src="{1}"/></a>'.format(
                 reverse('report_builder_create_copy', args=[self.id]),
-                getattr(settings, 'STATIC_URL', '/static/'),
-            ))
+                static('report_builder/img/copy.svg')
+            )
+        )
 
     copy_report.short_description = "Copy"
 
