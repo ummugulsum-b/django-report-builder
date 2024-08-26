@@ -6,10 +6,11 @@ setup(
     author="David Burke",
     author_email="david@burkesoftware.com",
     maintainer="Mustafa Ülker",
+    maintainer_email="mustafaulker.cs@gmail.com",
     description="Query and Report builder for Django ORM",
     license="BSD",
     keywords="django report",
-    url="https://gitlab.com/burke-software/django-report-builder",
+    url="https://github.com/mustafaulker/django-report-builder",
     packages=find_packages(exclude=["report_builder_demo", "report_builder_demo.*"]),
     include_package_data=True,
     classifiers=[

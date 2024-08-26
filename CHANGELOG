@@ -1,6 +1,20 @@
-## 6.5 (draft)
+## 6.5.5
 
-- Add Django 4.x support. Thanks @jeanwainer
+- Remove six dependency
+- Replace deprecated openpyxl save_virtual_workbook func. (Cherry-picked from @tmszi's fork)
+
+## 6.5.4
+
+- Create AutoField to BigAutoField convertion migration
+
+## 6.5.3
+
+- Fix "Router with basename "report" is already registered" error
+- Add missing static files
+
+## 6.5
+
+- Make compatible for Django >4. Project's GitLab Repo merged into this fork and Django 4 compatibility changes were made.
 
 ## 6.4
 
