@@ -7,6 +7,10 @@ Targets sys admins and capable end users who might not be able to program or gai
 
 # News
 
+## 6.5.6
+- Fix dynamically static-file path generating
+- Remove redundant code
+
 ## 6.5.5
 
 - Remove six dependency
