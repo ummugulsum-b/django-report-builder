@@ -17,7 +17,6 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 
-from build.lib.report_builder.models import Format
 from report_builder.unique_slugify import unique_slugify
 from .email import email_report
 from .mixins import generate_filename, DataExportMixin
