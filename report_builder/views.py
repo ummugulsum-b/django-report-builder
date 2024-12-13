@@ -14,9 +14,9 @@ from six import string_types
 from .mixins import DataExportMixin
 from .models import Report
 from .utils import duplicate
-
+import logging
 User = get_user_model()
-
+logger = logging.getLogger(__name__)
 
 class ReportSPAView(TemplateView):
 
@@ -60,31 +60,43 @@ class DownloadFileView(DataExportMixin, View):
     def dispatch(self, *args, **kwargs):
         return super(DownloadFileView, self).dispatch(*args, **kwargs)
 
-    def process_report(self, report_id, user_id,
-                       file_type, to_response, queryset=None):
+    def process_report(self, report_id, user_id, file_type, to_response, queryset=None):
+        logger.info(f"Processing report: report_id={report_id}, user_id={user_id}, file_type={file_type}, to_response={to_response}")
+        
         report = get_object_or_404(Report, pk=report_id)
         user = User.objects.get(pk=user_id)
 
         if to_response:
-            return report.run_report(file_type, user, queryset)
+            result = report.run_report(file_type, user, queryset)
+            logger.info(f"Report processed synchronously: report_id={report_id}")
+            return result
         else:
-            report.run_report(file_type, user,  queryset, asynchronous=True)
+            logger.info(f"Starting asynchronous report generation: report_id={report_id}")
+            report.run_report(file_type, user, queryset, asynchronous=True)
 
     def get(self, request, *args, **kwargs):
         report_id = kwargs['pk']
         file_type = kwargs.get('filetype')
+        logger.info(f"GET request received for report: report_id={report_id}, file_type={file_type}")
+
         if getattr(settings, 'REPORT_BUILDER_ASYNC_REPORT', False):
             from .tasks import report_builder_file_async_report_save
+            logger.info(f"Starting asynchronous task for report generation: report_id={report_id}")
+            
             report_task = report_builder_file_async_report_save.delay(
                 report_id, request.user.pk, file_type)
             task_id = report_task.task_id
+
+            logger.info(f"Asynchronous task started: task_id={task_id}")
             return HttpResponse(
                 json.dumps({'task_id': task_id}),
-                content_type="application/json")
+                content_type="application/json"
+            )
         else:
+            logger.info(f"Processing report synchronously: report_id={report_id}")
             return self.process_report(
-                report_id, request.user.pk, file_type, to_response=True)
-
+                report_id, request.user.pk, file_type, to_response=True
+            )
 
 @staff_member_required
 def ajax_add_star(request, pk):

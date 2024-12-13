@@ -30,6 +30,8 @@ from .utils import get_model_from_path_string, sort_data, increment_total, forma
 
 AUTH_USER_MODEL = getattr(settings, "AUTH_USER_MODEL", "auth.User")
 
+import logging
+logger = logging.getLogger(__name__)
 
 def get_allowed_models():
     models = ContentType.objects.all()
@@ -525,7 +527,8 @@ class Report(models.Model):
         scheduled=False,
         email_to: str = None,
     ):
-        """Generate this report file"""
+        logger.info(f"Running report: file_type={file_type}, asynchronous={asynchronous}, scheduled={scheduled}, email_to={email_to}")
+        
         if not queryset:
             queryset = self.get_query()
 
@@ -547,23 +550,27 @@ class Report(models.Model):
         chunks = list(self.chunk_data(objects_list, chunk_size))
 
         if scheduled:
+            logger.info(f"Scheduled report save started: title={title}")
             self.async_report_save(
                 chunks, title, header, widths, file_type, email_to=email_to
             )
         elif asynchronous:
             if user is None:
+                logger.error("Cannot run async report without a user")
                 raise Exception("Cannot run async report without a user")
+            logger.info(f"Asynchronous report save started: title={title}, user={user}")
             self.async_report_save(chunks, title, header, widths, user, file_type)
         else:
             if file_type == "csv":
+                logger.info(f"Generating CSV response: title={title}")
                 return data_export.list_to_csv_response(
                     objects_list, title, header, widths
                 )
             else:
+                logger.info(f"Generating XLSX response: title={title}")
                 return data_export.list_to_xlsx_response(
                     objects_list, title, header, widths
                 )
-
 
 class Format(models.Model):
     """A specifies a Python string format for e.g. `DisplayField`s."""
