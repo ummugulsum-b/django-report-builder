@@ -31,7 +31,9 @@ from .utils import get_model_from_path_string, sort_data, increment_total, forma
 AUTH_USER_MODEL = getattr(settings, "AUTH_USER_MODEL", "auth.User")
 
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 def get_allowed_models():
     models = ContentType.objects.all()
@@ -473,12 +475,15 @@ class Report(models.Model):
                 self.report_file.save(
                     file_name, ContentFile(csv_file.getvalue().encode())
                 )
+                logger.info(f"File path: {self.report_file.path}")
+
             elif file_type == "xlsx":
                 xlsx_file = data_export.list_to_xlsx_file(
                     single_chunk, title, header, widths
                 )
                 file_name = generate_filename(title, ".xlsx")
                 self.report_file.save(file_name, ContentFile(xlsx_file.read()))
+                logger.info(f"File path: {self.report_file.path}")
             self.report_file_creation = datetime.datetime.today()
             self.save()
             return
@@ -502,6 +507,7 @@ class Report(models.Model):
 
             zip_filename = f"{title}.zip"
             self.report_file.save(zip_filename, ContentFile(zip_buffer.getvalue()))
+            logger.info(f"File path: {self.report_file.path}")
             self.report_file_creation = datetime.datetime.today()
             self.save()
 
@@ -515,7 +521,8 @@ class Report(models.Model):
     @staticmethod
     def chunk_data(data, chunk_size):
         for i in range(0, len(data), chunk_size):
-            print(f"Chunk: {i} ile {i + chunk_size}")  # Debug
+            print(f"Chunk: {i} ile {i + chunk_size}")
+            logger.info(f"Chunk: {i} ile {i + chunk_size}")  # Debug
             yield data[i : i + chunk_size]
 
     def run_report(
@@ -527,8 +534,10 @@ class Report(models.Model):
         scheduled=False,
         email_to: str = None,
     ):
-        logger.info(f"Running report: file_type={file_type}, asynchronous={asynchronous}, scheduled={scheduled}, email_to={email_to}")
-        
+        logger.info(
+            f"Running report: file_type={file_type}, asynchronous={asynchronous}, scheduled={scheduled}, email_to={email_to}"
+        )
+
         if not queryset:
             queryset = self.get_query()
 
@@ -546,7 +555,7 @@ class Report(models.Model):
             header.append(field.name)
             widths.append(field.width)
 
-        chunk_size = 1000000
+        chunk_size = 5000
         chunks = list(self.chunk_data(objects_list, chunk_size))
 
         if scheduled:
@@ -571,6 +580,7 @@ class Report(models.Model):
                 return data_export.list_to_xlsx_response(
                     objects_list, title, header, widths
                 )
+
 
 class Format(models.Model):
     """A specifies a Python string format for e.g. `DisplayField`s."""
